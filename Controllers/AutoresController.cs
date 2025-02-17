@@ -127,5 +127,58 @@ namespace Gestion_Biblioteca.Controllers
 
             return Ok(Cantidad);
         }
+
+        [HttpGet]
+        [Route("AuhtorsByBooksCount")]
+        public IActionResult LibrosCantAutor()
+        {
+            var autores = (from a in _bibliotecaContext.Autor
+                           join l in _bibliotecaContext.Libro
+                           on a.id_autor equals l.id_autor select new
+                           {
+                               autor = a.nombre,
+                           }).GroupBy(x => x.autor).Select(r => new
+                           {
+                               autor = r.Key,
+                               cantidad = r.Count()
+                           }).OrderByDescending(x => x.cantidad).ToList();
+            if (autores == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(autores);
+        }
+
+        [HttpGet]
+        [Route("AuthorsHasBook/{id}")]
+        public IActionResult AutorTieneLibro(int id)
+        {
+            string posee = "No posee libros publicados";
+            List<Libro> libros = (from l in _bibliotecaContext.Libro where l.id_autor == id select l).ToList();
+            if (libros == null)
+            {
+                return NotFound();
+            }
+            else if(libros.Count > 0)
+            {
+                posee = "Si posee libros publicados";
+            }
+            return Ok(posee);
+        }
+
+        [HttpGet]
+        [Route("AuthorFirstBook/{id}")]
+        public IActionResult AutorPrimerLibro(int id)
+        {
+            var libro = (from l in _bibliotecaContext.Libro where l.id_autor == id select l).OrderBy(x => x.anio_publicacion).FirstOrDefault();
+
+            if (libro == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(libro);
+        }
     }
 }

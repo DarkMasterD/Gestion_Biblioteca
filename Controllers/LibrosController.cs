@@ -146,5 +146,40 @@ namespace Gestion_Biblioteca.Controllers
 
             return Ok(libro);
         }
+
+        [HttpGet]
+        [Route("RecentBooks")]
+        public IActionResult LibrosRecientes()
+        {
+            List<Libro> libros = (from a in _bibliotecaContext.Libro select a).OrderByDescending(x => x.anio_publicacion).ToList();
+
+            if (libros.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(libros);
+        }
+
+        [HttpGet]
+        [Route("BooksByYear")]
+        public IActionResult LibrosPorAnio()
+        {
+            var libros = (from a in _bibliotecaContext.Libro select new
+            {
+                year = a.anio_publicacion
+            }).GroupBy(x => x.year).Select(l => new
+            {
+                year = l.Key,
+                cantidad = l.Count()
+            }).ToList();
+
+            if (libros.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(libros);
+        }
     }
 }
